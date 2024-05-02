@@ -1,40 +1,40 @@
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
-import 'camera.dart'; // Assuming you have this file for camera functionality
-import 'friends.dart'; // Assuming you have this file for friends functionality
-import 'documents.dart'; // Assuming you have this file for documents functionality
+import 'camera.dart'; 
+import 'friends.dart'; 
+import 'documents.dart'; 
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
-void main() {
-  runApp(MaterialApp(home: MainApp()));
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  final cameras = await availableCameras();
+  runApp(MaterialApp(home: MainApp(cameras: cameras)));
 }
 
 class MainApp extends StatefulWidget {
+  final List<CameraDescription> cameras;
+  
+  MainApp({required this.cameras});
+
   @override
   _MainAppState createState() => _MainAppState();
 }
 
 class _MainAppState extends State<MainApp> {
   int _selectedIndex = 1; // Set this to 1 to open Camera screen first
-  List<CameraDescription> cameras = [];
-  bool _cameraInit = false;
 
   @override
   void initState() {
     super.initState();
-    _initializeCameras();
   }
 
-  Future<void> _initializeCameras() async {
-    cameras = await availableCameras();
-    setState(() {
-      _cameraInit = true;
-    });
-  }
-
-  final List<Widget> Function(List<CameraDescription>) _widgetOptions = 
-      (cameras) => <Widget>[
+  List<Widget> get widgetOptions => <Widget>[
     DocumentsScreen(),  // First in the list, but on the left in the navigation
-    CameraScreen(cameras: cameras),  // Second in the list, but in the center
+    CameraScreen(cameras: widget.cameras),  // Second in the list, but in the center
     FriendsScreen(),  // Third in the list, but on the right
   ];
 
@@ -46,16 +46,9 @@ class _MainAppState extends State<MainApp> {
 
   @override
   Widget build(BuildContext context) {
-    // Check if cameras are initialized
-    if (!_cameraInit) {
-      return Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
-    }
-
     return Scaffold(
       body: Center(
-        child: _widgetOptions(cameras).elementAt(_selectedIndex),
+        child: widgetOptions.elementAt(_selectedIndex),
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
