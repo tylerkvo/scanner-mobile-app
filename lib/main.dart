@@ -1,98 +1,81 @@
-import 'dart:io';
-
-import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:scanner/photo.dart';
+import 'package:camera/camera.dart';
+import 'camera.dart'; // Assuming you have this file for camera functionality
+import 'friends.dart'; // Assuming you have this file for friends functionality
+import 'documents.dart'; // Assuming you have this file for documents functionality
 
-late List<CameraDescription> _cameras;
-
-Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-
-  //await Permission.camera.request();
-  _cameras = await availableCameras();
-  runApp(MaterialApp(home: CameraApp()));
+void main() {
+  runApp(MaterialApp(home: MainApp()));
 }
 
-/// CameraApp is the Main Application.
-class CameraApp extends StatefulWidget {
-  /// Default Constructor
-  const CameraApp({super.key});
-
+class MainApp extends StatefulWidget {
   @override
-  State<CameraApp> createState() => _CameraAppState();
+  _MainAppState createState() => _MainAppState();
 }
 
-class _CameraAppState extends State<CameraApp> {
-  late CameraController controller;
-
-  Future<void> pause() async {
-    await Future.delayed(Duration(seconds: 10));
-    controller.pausePreview();
-    //final pic  = controller.takePicture();
-  }
+class _MainAppState extends State<MainApp> {
+  int _selectedIndex = 1; // Set this to 1 to open Camera screen first
+  List<CameraDescription> cameras = [];
+  bool _cameraInit = false;
 
   @override
   void initState() {
     super.initState();
-    controller = CameraController(_cameras[0], ResolutionPreset.max);
-    controller.initialize().then((_) {
-      if (!mounted) {
-        return;
-      }
-      setState(() {});
-    }).catchError((Object e) {
-      if (e is CameraException) {
-        print(e);
-        switch (e.code) {
-          case 'CameraAccessDenied':
-            // Handle access errors here.
-            break;
-          default:
-            // Handle other errors here.
-            break;
-        }
-      }
-    });
-    pause();
+    _initializeCameras();
   }
 
-  @override
-  void dispose() {
-    controller.dispose();
-    super.dispose();
+  Future<void> _initializeCameras() async {
+    cameras = await availableCameras();
+    setState(() {
+      _cameraInit = true;
+    });
+  }
+
+  final List<Widget> Function(List<CameraDescription>) _widgetOptions = 
+      (cameras) => <Widget>[
+    DocumentsScreen(),  // First in the list, but on the left in the navigation
+    CameraScreen(cameras: cameras),  // Second in the list, but in the center
+    FriendsScreen(),  // Third in the list, but on the right
+  ];
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    if (!controller.value.isInitialized) {
-      return Container();
+    // Check if cameras are initialized
+    if (!_cameraInit) {
+      return Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
     }
+
     return Scaffold(
-        body: Column(
-      //alignment: Alignment.bottomCenter,
-      children: [
-        Expanded(child: CameraPreview(controller)),
-        //CameraPreview(controller),
-        GestureDetector(
-            onTap: () async {
-              final photo = await controller.takePicture();
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => ImageDescription(
-                          image: Image.file(File(photo.path)))));
-            },
-            child: Container(
-                width: 80,
-                height: 80,
-                margin: EdgeInsets.symmetric(vertical: 20),
-                decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                        color: Color.fromRGBO(255, 255, 255, 0.5), width: 5))))
-      ],
-    ));
+      body: Center(
+        child: _widgetOptions(cameras).elementAt(_selectedIndex),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.folder),
+            label: 'Documents',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.camera_alt),
+            label: 'Camera',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.people),
+            label: 'Friends',
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        selectedItemColor: Colors.amber[800],
+        onTap: _onItemTapped,
+      ),
+    );
   }
 }
