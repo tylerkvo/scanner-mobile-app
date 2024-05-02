@@ -10,7 +10,7 @@ Future<void> main() async {
       //theme: ThemeData(bottomSheetTheme: BottomSheetThemeData(elevation: 0)),
       home: Scaffold(
           body: ImageDescription(
-              image: Image(image: AssetImage("assets/logo.png"))))));
+              image: Image(image: AssetImage("assets/logo.jpeg"))))));
 }
 
 class ImageDescription extends StatelessWidget {

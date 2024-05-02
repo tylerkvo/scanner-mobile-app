@@ -81,8 +81,8 @@ class _CameraAppState extends State<CameraApp> {
               Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) =>
-                          ImageDescription(image: File(photo.path))));
+                      builder: (context) => ImageDescription(
+                          image: Image.file(File(photo.path)))));
             },
             child: Container(
                 width: 80,
