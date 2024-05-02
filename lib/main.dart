@@ -3,6 +3,7 @@ import 'package:camera/camera.dart';
 import 'camera.dart'; 
 import 'friends.dart'; 
 import 'documents.dart'; 
+import 'login.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
@@ -12,12 +13,30 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   final cameras = await availableCameras();
-  runApp(MaterialApp(home: MainApp(cameras: cameras)));
+  runApp(MyApp(cameras: cameras));
+}
+
+class MyApp extends StatelessWidget {
+  final List<CameraDescription> cameras;
+
+  MyApp({required this.cameras});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Flutter Firebase App',
+      initialRoute: '/',
+      routes: {
+        '/': (context) => LoginScreen(),
+        '/mainApp': (context) => MainApp(cameras: cameras),
+      },
+    );
+  }
 }
 
 class MainApp extends StatefulWidget {
   final List<CameraDescription> cameras;
-  
+
   MainApp({required this.cameras});
 
   @override
