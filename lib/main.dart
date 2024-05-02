@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:scanner/photo.dart';
 
 late List<CameraDescription> _cameras;
 
@@ -9,7 +12,7 @@ Future<void> main() async {
 
   //await Permission.camera.request();
   _cameras = await availableCameras();
-  runApp(const CameraApp());
+  runApp(MaterialApp(home: CameraApp()));
 }
 
 /// CameraApp is the Main Application.
@@ -66,19 +69,29 @@ class _CameraAppState extends State<CameraApp> {
     if (!controller.value.isInitialized) {
       return Container();
     }
-    return MaterialApp(
-        home: Stack(
-      alignment: Alignment.bottomCenter,
+    return Scaffold(
+        body: Column(
+      //alignment: Alignment.bottomCenter,
       children: [
-        CameraPreview(controller),
-        Container(
-            width: 80,
-            height: 80,
-            margin: EdgeInsets.symmetric(vertical: 20),
-            decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                    color: Color.fromRGBO(255, 255, 255, 0.5), width: 5)))
+        Expanded(child: CameraPreview(controller)),
+        //CameraPreview(controller),
+        GestureDetector(
+            onTap: () async {
+              final photo = await controller.takePicture();
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) =>
+                          ImageDescription(image: File(photo.path))));
+            },
+            child: Container(
+                width: 80,
+                height: 80,
+                margin: EdgeInsets.symmetric(vertical: 20),
+                decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                        color: Color.fromRGBO(255, 255, 255, 0.5), width: 5))))
       ],
     ));
   }
