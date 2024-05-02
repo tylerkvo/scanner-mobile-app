@@ -16,27 +16,28 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isRegister = false;  // Toggle between register and login
 
   void _registerAccount() async {
-    try {
-      final UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
-      );
-      if (userCredential.user != null) {
-        // Assuming the UID is used as the document ID
-        await FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid).set({
-          'username': _usernameController.text.trim(),
-          'email': _emailController.text.trim(),
-        });
-
-        // Navigate to the main application screen after successful registration
-        Navigator.pushReplacementNamed(context, '/mainApp');
-      }
-    } on FirebaseAuthException catch (e) {
-      setState(() {
-        _errorMessage = e.message ?? 'An error occurred. Please try again.';
+  try {
+    final UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+      email: _emailController.text.trim(),
+      password: _passwordController.text.trim(),
+    );
+    if (userCredential.user != null) {
+      // Store user data in Firestore
+      await FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid).set({
+        'username': _usernameController.text.trim(),
+        'email': _emailController.text.trim(),
+        'friends': [], // Initialize empty array for friends
       });
+
+      // Navigate to the main application screen after successful registration
+      Navigator.pushReplacementNamed(context, '/mainApp');
     }
+  } on FirebaseAuthException catch (e) {
+    setState(() {
+      _errorMessage = e.message ?? 'An error occurred. Please try again.';
+    });
   }
+}
 
   void _signInWithEmailAndPassword() async {
     try {
