@@ -3,13 +3,24 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:camera/camera.dart';
-import 'package:scanner/document.dart';
+import 'package:scanner/scan.dart';
 
 class CameraScreen extends StatefulWidget {
   const CameraScreen({Key? key});
 
   @override
   State<CameraScreen> createState() => _CameraScreenState();
+}
+class NoAnimationPageRoute extends PageRouteBuilder {
+  final Widget page;
+
+  NoAnimationPageRoute({required this.page})
+      : super(
+          pageBuilder: (context, animation1, animation2) => page,
+          transitionsBuilder: (context, animation1, animation2, child) {
+            return child; // No animation
+          },
+        );
 }
 
 class _CameraScreenState extends State<CameraScreen> {
@@ -18,7 +29,7 @@ class _CameraScreenState extends State<CameraScreen> {
   Future<void> _setupCamera() async {
     final cameras = await availableCameras();
     if (cameras.isNotEmpty) {
-      var tempController = CameraController(cameras[0], ResolutionPreset.veryHigh, enableAudio: false); // Disable audio if not needed
+      var tempController = CameraController(cameras[0], ResolutionPreset.veryHigh, enableAudio: false);
       await tempController.initialize().then((_) {
         if (!mounted) return;
         setState(() => controller = tempController);
@@ -38,35 +49,26 @@ class _CameraScreenState extends State<CameraScreen> {
 
   @override
   void dispose() {
-    controller?.dispose(); // Dispose safely
+    controller?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    // Check if controller is initialized
     if (controller == null || !controller!.value.isInitialized) {
       return const Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(), // Show loading indicator
-        ),
+        body: Center(child: CircularProgressIndicator()),
       );
     }
 
-    // Set status bar color to black with white icons
-    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-      statusBarColor: Colors.black,
-      statusBarIconBrightness: Brightness.light,
-    ));
-
     return Scaffold(
-      body: SafeArea( // Ensure content does not overlap the status bar
+      body: SafeArea(
         child: Stack(
-          fit: StackFit.expand, // Ensures the stack fills the whole space
+          fit: StackFit.expand,
           children: [
-            CameraPreview(controller!), // This will now respect SafeArea boundaries
+            CameraPreview(controller!),
             Positioned(
-              bottom: 50, // Distance from bottom
+              bottom: 50,
               left: 0,
               right: 0,
               child: Align(
@@ -77,8 +79,8 @@ class _CameraScreenState extends State<CameraScreen> {
                     controller!.pausePreview();
                     await Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (context) => DocumentScreen(image: File(photo.path))
+                      NoAnimationPageRoute(
+                        page: ScanScreen(image: File(photo.path))
                       )
                     );
                     controller!.resumePreview();
@@ -88,10 +90,7 @@ class _CameraScreenState extends State<CameraScreen> {
                     height: 80,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      border: Border.all(
-                        color: const Color.fromARGB(255, 255, 255, 255),
-                        width: 6
-                      )
+                      border: Border.all(color: const Color.fromARGB(255, 255, 255, 255), width: 6)
                     ),
                   ),
                 ),
