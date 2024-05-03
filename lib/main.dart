@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:camera/camera.dart';
-import 'camera.dart'; 
-import 'friends.dart'; 
-import 'documents.dart'; 
+import 'camera.dart';
+import 'friends.dart';
+import 'documents.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
@@ -11,14 +10,11 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  final cameras = await availableCameras();
-  runApp(MaterialApp(home: MainApp(cameras: cameras)));
+  runApp(MaterialApp(home: MainApp()));
 }
 
 class MainApp extends StatefulWidget {
-  final List<CameraDescription> cameras;
-  
-  MainApp({required this.cameras});
+  MainApp({super.key});
 
   @override
   _MainAppState createState() => _MainAppState();
@@ -33,10 +29,10 @@ class _MainAppState extends State<MainApp> {
   }
 
   List<Widget> get widgetOptions => <Widget>[
-    DocumentsScreen(),  // First in the list, but on the left in the navigation
-    CameraScreen(cameras: widget.cameras),  // Second in the list, but in the center
-    FriendsScreen(),  // Third in the list, but on the right
-  ];
+        DocumentsScreen(), // First in the list, but on the left in the navigation
+        CameraScreen(), // Second in the list, but in the center
+        FriendsScreen(), // Third in the list, but on the right
+      ];
 
   void _onItemTapped(int index) {
     setState(() {
@@ -47,9 +43,7 @@ class _MainAppState extends State<MainApp> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: widgetOptions.elementAt(_selectedIndex),
-      ),
+      body: SizedBox.expand(child: widgetOptions.elementAt(_selectedIndex)),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
