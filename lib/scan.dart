@@ -62,15 +62,7 @@ class _ScanScreenState extends State<ScanScreen> {
           title: const Text("Scan Results",
               style: TextStyle(fontWeight: FontWeight.bold)),
           centerTitle: false,
-          actions: [
-            TextButton(
-              onPressed: () {
-                ScaffoldMessenger.of(context)
-                    .showSnackBar(const SnackBar(content: Text('Scan saved')));
-              },
-              child: const Text("Save"),
-            )
-          ]),
+          ),
       body: LayoutBuilder(
           builder: (context, constraints) => Container(
               height: constraints.maxHeight - 320,
@@ -99,6 +91,46 @@ class _ScanScreenState extends State<ScanScreen> {
               child: widget.scanContents != null
                   ? Text(widget.scanContents!)
                   : const Center(child: CircularProgressIndicator()))),
+       bottomNavigationBar: SizedBox(height: 70, child: 
+      BottomAppBar(
+        color: Colors.black,  // This is the color of the BottomAppBar
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.end,  // Aligns the button to the right
+          children: <Widget>[
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              decoration: BoxDecoration(
+                color: Colors.blue,  // Background color of the button
+                borderRadius: BorderRadius.circular(30),  // Makes it oval
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black26,
+                    blurRadius: 4,
+                    offset: Offset(0, 2),
+                  )
+                ],
+              ),
+              child: InkWell(
+                onTap: () {
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Save Tapped')));
+                },
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,  // Minimizes the Row size to fit its children
+                  children: [
+                    Text("Save", style: TextStyle(color: Colors.white)),  // Save text
+                    SizedBox(width: 10),
+                    Icon(Icons.save, color: Colors.white),  // Save icon
+                    
+                    
+                  ],
+                ),
+              ),
+            ),
+        
+          ],
+        ),
+      ),
+      )
       //   title: const Text("Untitled photo", style: TextStyle(fontWeight: FontWeight.bold)),
       //   automaticallyImplyLeading: false,
       //   leading: IconButton(
