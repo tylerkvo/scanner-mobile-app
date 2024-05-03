@@ -45,18 +45,38 @@ class _ScanScreenState extends State<ScanScreen> {
   }
 
   Future<void> _saveScan() async {
-    final timestamp = DateTime.now().millisecondsSinceEpoch;
-    final storageRef = FirebaseStorage.instance.ref('images/$timestamp');
-    await storageRef.putFile(widget.image);
-    final url = storageRef.getDownloadURL();
+  // Get current time as a timestamp to create a unique file name
+  final timestamp = DateTime.now().millisecondsSinceEpoch;
 
-    String currentUserId = FirebaseAuth.instance.currentUser!.uid;
-    DocumentSnapshot userDoc = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(currentUserId)
-        .get();
-    // Add { fileName: timestamp?, url: url, text: widget.scanContents! } to user
-  }
+  // Create a reference to Firebase Storage
+  final storageRef = FirebaseStorage.instance.ref('scans/$timestamp.jpg');
+
+  // Upload the file
+  await storageRef.putFile(widget.image);
+
+  // Get the download URL
+  final String url = await storageRef.getDownloadURL();
+
+  // Get the current user ID
+  String currentUserId = FirebaseAuth.instance.currentUser!.uid;
+
+  // Prepare the scan data
+  Map<String, dynamic> scanData = {
+    'timestamp': timestamp,
+    'url': url,
+    'text': widget.scanContents ?? "No text detected", // Use default text if none detected
+  };
+
+  // Update the user's document in Firestore
+  await FirebaseFirestore.instance.collection('users').doc(currentUserId)
+    .update({
+      'scans': FieldValue.arrayUnion([scanData]), // Adds scan data to an array of scans
+    });
+  Navigator.pop(context);
+  // Show a snackbar message
+  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Scan saved')));
+}
+
 
   @override
   void initState() {
