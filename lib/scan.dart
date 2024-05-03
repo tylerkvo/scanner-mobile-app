@@ -52,10 +52,10 @@ class _ScanScreenState extends State<ScanScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-          title: const Text("Scan Results",
-              style: TextStyle(fontWeight: FontWeight.bold)),
-          centerTitle: false,
-          ),
+        title: const Text("Scan Results",
+            style: TextStyle(fontWeight: FontWeight.bold)),
+        centerTitle: false,
+      ),
       body: LayoutBuilder(
           builder: (context, constraints) => Container(
               height: constraints.maxHeight - 320,
@@ -66,7 +66,7 @@ class _ScanScreenState extends State<ScanScreen> {
                       //border: Border.all(width: 1, color: Color.fromRGBO(0, 0, 0, 0.1))),
                       boxShadow: [
                         BoxShadow(
-                            color: Color.fromRGBO(0, 0, 0, 0.1), blurRadius: 4)
+                            color: Color.fromRGBO(0, 0, 0, 0.5), blurRadius: 4)
                       ]),
                   child: Image.file(widget.image, fit: BoxFit.contain)))),
       bottomSheet: Container(
@@ -84,46 +84,18 @@ class _ScanScreenState extends State<ScanScreen> {
               child: widget.scanContents != null
                   ? Text(widget.scanContents!)
                   : const Center(child: CircularProgressIndicator()))),
-       bottomNavigationBar: SizedBox(height: 70, child: 
-      BottomAppBar(
-        color: Colors.black,  // This is the color of the BottomAppBar
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.end,  // Aligns the button to the right
-          children: <Widget>[
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              decoration: BoxDecoration(
-                color: Colors.blue,  // Background color of the button
-                borderRadius: BorderRadius.circular(30),  // Makes it oval
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black26,
-                    blurRadius: 4,
-                    offset: Offset(0, 2),
-                  )
-                ],
-              ),
-              child: InkWell(
-                onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Save Tapped')));
-                },
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,  // Minimizes the Row size to fit its children
-                  children: [
-                    Text("Save", style: TextStyle(color: Colors.white)),  // Save text
-                    SizedBox(width: 10),
-                    Icon(Icons.save, color: Colors.white),  // Save icon
-                    
-                    
-                  ],
-                ),
-              ),
-            ),
-        
-          ],
-        ),
+      bottomNavigationBar: BottomAppBar(
+        color: Colors.black,
+        child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+          FilledButton.icon(
+              onPressed: () {
+                ScaffoldMessenger.of(context)
+                    .showSnackBar(const SnackBar(content: Text('Scan saved')));
+              },
+              icon: const Icon(Icons.save),
+              label: const Text('Save'))
+        ]),
       ),
-      )
     );
   }
 }
