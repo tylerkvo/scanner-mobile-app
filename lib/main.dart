@@ -1,8 +1,10 @@
+/*
+Used BottomNavigationBar docs: https://api.flutter.dev/flutter/material/BottomNavigationBar-class.html
+*/
 import 'package:flutter/material.dart';
-import 'package:camera/camera.dart';
-import 'camera.dart'; 
-import 'friends.dart'; 
-import 'documents.dart'; 
+import 'camera.dart';
+import 'friends.dart';
+import 'documents.dart';
 import 'login.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
@@ -14,23 +16,20 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   FirebaseFirestore firestore = FirebaseFirestore.instance;
-  final cameras = await availableCameras();
-  runApp(MyApp(cameras: cameras));
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  final List<CameraDescription> cameras;
-
-  MyApp({required this.cameras});
+  MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Firebase App',
+      title: 'Scanner App',
       initialRoute: '/',
       routes: {
         '/': (context) => LoginScreen(),
-        '/mainApp': (context) => MainApp(cameras: cameras),
+        '/mainApp': (context) => MainApp(),
         '/login': (context) => LoginScreen(),
       },
     );
@@ -38,50 +37,37 @@ class MyApp extends StatelessWidget {
 }
 
 class MainApp extends StatefulWidget {
-  final List<CameraDescription> cameras;
-
-  MainApp({required this.cameras});
+  MainApp({super.key});
 
   @override
-  _MainAppState createState() => _MainAppState();
+  State<MainApp> createState() => _MainAppState();
 }
 
 class _MainAppState extends State<MainApp> {
-  int _selectedIndex = 1; // Open Camera screen first
+  int _selectedIndex = 1;
 
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  List<Widget> get widgetOptions => <Widget>[
-        DocumentsScreen(), // First in the list, but on the left in the navigation
-        CameraScreen(), // Second in the list, but in the center
-        FriendsScreen(), // Third in the list, but on the right
-      ];
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
+  final screens = [DocumentsScreen(), CameraScreen(), FriendsScreen()];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SizedBox.expand(child: widgetOptions.elementAt(_selectedIndex)),
+      body: SizedBox.expand(child: screens[_selectedIndex]),
       bottomNavigationBar: BottomNavigationBar(
-        items: <BottomNavigationBarItem>[
+        items: [
           BottomNavigationBarItem(
-            icon: Icon(_selectedIndex == 0 ? Icons.folder : Icons.folder_outlined),
+            icon: Icon(
+                _selectedIndex == 0 ? Icons.folder : Icons.folder_outlined),
             label: 'Documents',
           ),
           BottomNavigationBarItem(
-            icon: Icon(_selectedIndex == 1 ? Icons.camera_alt : Icons.camera_alt_outlined),
+            icon: Icon(_selectedIndex == 1
+                ? Icons.camera_alt
+                : Icons.camera_alt_outlined),
             label: 'Camera',
           ),
           BottomNavigationBarItem(
-            icon: Icon(_selectedIndex == 2 ? Icons.people : Icons.people_outline),
+            icon:
+                Icon(_selectedIndex == 2 ? Icons.people : Icons.people_outline),
             label: 'Friends',
           ),
         ],
@@ -89,7 +75,11 @@ class _MainAppState extends State<MainApp> {
         backgroundColor: _selectedIndex == 1 ? Colors.black : Colors.white,
         unselectedItemColor: _selectedIndex == 1 ? Colors.white : Colors.black,
         selectedItemColor: _selectedIndex == 1 ? Colors.white : Colors.black,
-        onTap: _onItemTapped,
+        onTap: (index) {
+          setState(() {
+            _selectedIndex = index;
+          });
+        },
         showSelectedLabels: false,
         showUnselectedLabels: false,
         iconSize: 36,

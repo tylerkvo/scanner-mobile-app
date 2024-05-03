@@ -1,10 +1,13 @@
+/*
+Used TextField docs: https://api.flutter.dev/flutter/material/TextField-class.html
+*/
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
-  _LoginScreenState createState() => _LoginScreenState();
+  State<LoginScreen> createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> {
@@ -12,36 +15,37 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _usernameController = TextEditingController();
-  final _firstNameController = TextEditingController(); // Controller for first name
-  final _lastNameController = TextEditingController(); // Controller for last name
+  final _firstNameController = TextEditingController();
+  final _lastNameController = TextEditingController();
   String _errorMessage = '';
-  bool _isRegister = false;  // Toggle between register and login
+  bool _isRegister = false;
 
   void _registerAccount() async {
-  try {
-    final UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
-      email: _emailController.text.trim(),
-      password: _passwordController.text.trim(),
-    );
-    if (userCredential.user != null) {
-      // Store user data in Firestore
-      await FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid).set({
-        'firstName': _firstNameController.text.trim(), // Store first name
-          'lastName': _lastNameController.text.trim(), // Store last name
-        'username': _usernameController.text.trim(),
-        'email': _emailController.text.trim(),
-        'friends': [], // Initialize empty array for friends
-      });
+    try {
+      final userCredential = await _auth.createUserWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+      if (userCredential.user != null) {
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(userCredential.user!.uid)
+            .set({
+          'firstName': _firstNameController.text.trim(),
+          'lastName': _lastNameController.text.trim(),
+          'username': _usernameController.text.trim(),
+          'email': _emailController.text.trim(),
+          'friends': []
+        });
 
-      // Navigate to the main application screen after successful registration
-      Navigator.pushReplacementNamed(context, '/mainApp');
+        Navigator.pushReplacementNamed(context, '/mainApp');
+      }
+    } on FirebaseAuthException catch (e) {
+      setState(() {
+        _errorMessage = e.message ?? 'An error occurred. Please try again.';
+      });
     }
-  } on FirebaseAuthException catch (e) {
-    setState(() {
-      _errorMessage = e.message ?? 'An error occurred. Please try again.';
-    });
   }
-}
 
   void _signInWithEmailAndPassword() async {
     try {
@@ -50,7 +54,6 @@ class _LoginScreenState extends State<LoginScreen> {
         password: _passwordController.text.trim(),
       );
       if (userCredential.user != null) {
-        // Navigate to the main application screen after successful login
         Navigator.pushReplacementNamed(context, '/mainApp');
       }
     } on FirebaseAuthException catch (e) {
@@ -75,38 +78,47 @@ class _LoginScreenState extends State<LoginScreen> {
                   Expanded(
                     child: TextField(
                       controller: _firstNameController,
-                      decoration: InputDecoration(labelText: 'First Name'),
+                      decoration: const InputDecoration(
+                          labelText: 'First Name',
+                          border: OutlineInputBorder()),
                     ),
                   ),
-                  SizedBox(width: 10),  // spacing between the text fields
+                  const SizedBox(width: 10),
                   Expanded(
                     child: TextField(
                       controller: _lastNameController,
-                      decoration: InputDecoration(labelText: 'Last Name'),
+                      decoration: const InputDecoration(
+                          labelText: 'Last Name', border: OutlineInputBorder()),
                     ),
                   ),
                 ],
               ),
+              const SizedBox(height: 10),
               TextField(
                 controller: _usernameController,
-                decoration: InputDecoration(labelText: 'Username'),
+                decoration: const InputDecoration(
+                    labelText: 'Username', border: OutlineInputBorder()),
               ),
+              const SizedBox(height: 30),
             ],
             TextField(
               controller: _emailController,
-              decoration: InputDecoration(labelText: 'Email'),
+              decoration: const InputDecoration(
+                  labelText: 'Email', border: OutlineInputBorder()),
             ),
+            const SizedBox(height: 10),
             TextField(
               controller: _passwordController,
               decoration: InputDecoration(
-                labelText: 'Password',
-                errorText: _errorMessage.isEmpty ? null : _errorMessage,
-              ),
+                  labelText: 'Password',
+                  border: const OutlineInputBorder(),
+                  errorText: _errorMessage.isEmpty ? null : _errorMessage),
               obscureText: true,
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: _isRegister ? _registerAccount : _signInWithEmailAndPassword,
+              onPressed:
+                  _isRegister ? _registerAccount : _signInWithEmailAndPassword,
               child: Text(_isRegister ? 'Register' : 'Login'),
             ),
             TextButton(
@@ -116,7 +128,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   _errorMessage = '';
                 });
               },
-              child: Text(_isRegister ? 'Already have an account? Login' : 'Need an account? Register'),
+              child: Text(_isRegister
+                  ? 'Already have an account? Login'
+                  : 'Need an account? Register'),
             ),
           ],
         ),

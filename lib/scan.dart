@@ -1,3 +1,9 @@
+/*
+Used Flutter guide to learn about POST: https://docs.flutter.dev/cookbook/networking/send-data
+Used Google documentation to learn how to access Vision API: https://cloud.google.com/vision/docs/ocr#vision_text_detection-drest
+Used Firebase guide to learn how to upload images: https://firebase.google.com/docs/storage/flutter/upload-files
+Used StackOverflow to learn how to convert an image to base64: https://stackoverflow.com/questions/50036393/how-to-convert-an-image-to-base64-image-in-flutter
+*/
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -21,19 +27,18 @@ class _ScanScreenState extends State<ScanScreen> {
   Future<void> _fetchScanContents() async {
     final imageData = base64Encode(await widget.image.readAsBytes());
     final resp = await http.post(
-      Uri.parse(
-          'https://vision.googleapis.com/v1/images:annotate?key=AIzaSyDHALPXcvTJE1CIZB8XJY-aFhrZSalffbk'),
-      body: jsonEncode({
-        "requests": [
-          {
-            "image": {"content": imageData},
-            "features": [
-              {"type": "TEXT_DETECTION"}
-            ]
-          }
-        ]
-      }),
-    );
+        Uri.parse(
+            'https://vision.googleapis.com/v1/images:annotate?key=AIzaSyDHALPXcvTJE1CIZB8XJY-aFhrZSalffbk'),
+        body: jsonEncode({
+          "requests": [
+            {
+              "image": {"content": imageData},
+              "features": [
+                {"type": "TEXT_DETECTION"}
+              ]
+            }
+          ]
+        }));
     if (resp.statusCode == 200) {
       final json = jsonDecode(resp.body);
       final textData = json['responses'][0]['fullTextAnnotation'];
@@ -45,38 +50,25 @@ class _ScanScreenState extends State<ScanScreen> {
   }
 
   Future<void> _saveScan() async {
-  // Get current time as a timestamp to create a unique file name
-  final timestamp = DateTime.now().millisecondsSinceEpoch;
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    final storageRef = FirebaseStorage.instance.ref('scans/$timestamp.jpg');
+    await storageRef.putFile(widget.image);
+    final String url = await storageRef.getDownloadURL();
 
-  // Create a reference to Firebase Storage
-  final storageRef = FirebaseStorage.instance.ref('scans/$timestamp.jpg');
+    String currentUserId = FirebaseAuth.instance.currentUser!.uid;
+    final scanData = {
+      'timestamp': timestamp,
+      'url': url,
+      'text': widget.scanContents ?? "No text detected"
+    };
 
-  // Upload the file
-  await storageRef.putFile(widget.image);
-
-  // Get the download URL
-  final String url = await storageRef.getDownloadURL();
-
-  // Get the current user ID
-  String currentUserId = FirebaseAuth.instance.currentUser!.uid;
-
-  // Prepare the scan data
-  Map<String, dynamic> scanData = {
-    'timestamp': timestamp,
-    'url': url,
-    'text': widget.scanContents ?? "No text detected", // Use default text if none detected
-  };
-
-  // Update the user's document in Firestore
-  await FirebaseFirestore.instance.collection('users').doc(currentUserId)
-    .update({
-      'scans': FieldValue.arrayUnion([scanData]), // Adds scan data to an array of scans
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(currentUserId)
+        .update({
+      'scans': FieldValue.arrayUnion([scanData])
     });
-  Navigator.pop(context);
-  // Show a snackbar message
-  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Scan saved')));
-}
-
+  }
 
   @override
   void initState() {
@@ -89,54 +81,54 @@ class _ScanScreenState extends State<ScanScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Scan Results",
-            style: TextStyle(fontWeight: FontWeight.bold)),
-        centerTitle: false,
-      ),
-      body: LayoutBuilder(
-          builder: (context, constraints) => Container(
-              height: constraints.maxHeight - 320,
-              margin: const EdgeInsets.all(14),
-              alignment: Alignment.center,
-              child: Container(
-                  decoration: const BoxDecoration(
-                      //border: Border.all(width: 1, color: Color.fromRGBO(0, 0, 0, 0.1))),
-                      boxShadow: [
-                        BoxShadow(
-                            color: Color.fromRGBO(0, 0, 0, 0.5), blurRadius: 4)
-                      ]),
-                  child: Image.file(widget.image, fit: BoxFit.contain)))),
-      bottomSheet: Container(
-          height: 300,
-          width: double.infinity,
-          padding: const EdgeInsets.all(30),
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular((24))),
-            boxShadow: [
-              BoxShadow(color: Color.fromRGBO(0, 0, 0, 0.15), blurRadius: 6)
-            ],
-          ),
-          child: SingleChildScrollView(
-              child: widget.scanContents != null
-                  ? Text(widget.scanContents!)
-                  : const Center(child: CircularProgressIndicator()))),
-      bottomNavigationBar: BottomAppBar(
-        color: Colors.black,
-        child: widget.scanContents != null
-            ? Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-                FilledButton.icon(
-                    onPressed: () async {
-                      await _saveScan();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Scan saved')));
-                    },
-                    icon: const Icon(Icons.save),
-                    label: const Text('Save'))
-              ])
-            : null,
-      ),
-    );
+        appBar: AppBar(
+            title: const Text("Scan Results",
+                style: TextStyle(fontWeight: FontWeight.bold)),
+            centerTitle: false),
+        body: LayoutBuilder(
+            builder: (context, constraints) => Container(
+                height: constraints.maxHeight - 320,
+                margin: const EdgeInsets.all(14),
+                alignment: Alignment.center,
+                child: Container(
+                    decoration: const BoxDecoration(
+                        //border: Border.all(width: 1, color: Color.fromRGBO(0, 0, 0, 0.1))),
+                        boxShadow: [
+                          BoxShadow(
+                              color: Color.fromRGBO(0, 0, 0, 0.5),
+                              blurRadius: 4)
+                        ]),
+                    child: Image.file(widget.image, fit: BoxFit.contain)))),
+        bottomSheet: Container(
+            height: 300,
+            width: double.infinity,
+            padding: const EdgeInsets.all(30),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular((24))),
+              boxShadow: [
+                BoxShadow(color: Color.fromRGBO(0, 0, 0, 0.15), blurRadius: 6)
+              ],
+            ),
+            child: SingleChildScrollView(
+                child: widget.scanContents != null
+                    ? Text(widget.scanContents!)
+                    : const Center(child: CircularProgressIndicator()))),
+        bottomNavigationBar: BottomAppBar(
+          color: Colors.black,
+          child: widget.scanContents != null
+              ? Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+                  FilledButton.icon(
+                      onPressed: () async {
+                        await _saveScan();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Scan saved')));
+                        Navigator.pop(context);
+                      },
+                      icon: const Icon(Icons.save),
+                      label: const Text('Save'))
+                ])
+              : null,
+        ));
   }
 }
