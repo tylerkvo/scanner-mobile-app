@@ -54,10 +54,10 @@ class _MainAppState extends State<MainApp> {
   }
 
   List<Widget> get widgetOptions => <Widget>[
-    DocumentsScreen(),  // First in the list, but on the left in the navigation
-    CameraScreen(cameras: widget.cameras),  // Second in the list, but in the center
-    FriendsScreen(),  // Third in the list, but on the right
-  ];
+        DocumentsScreen(), // First in the list, but on the left in the navigation
+        CameraScreen(), // Second in the list, but in the center
+        FriendsScreen(), // Third in the list, but on the right
+      ];
 
   void _onItemTapped(int index) {
     setState(() {
@@ -68,9 +68,7 @@ class _MainAppState extends State<MainApp> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: widgetOptions.elementAt(_selectedIndex),
-      ),
+      body: SizedBox.expand(child: widgetOptions.elementAt(_selectedIndex)),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
