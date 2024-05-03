@@ -15,7 +15,7 @@ class DocumentScreen extends StatefulWidget {
 
 class _DocumentScreenState extends State<DocumentScreen> {
   Future<void> _fetchScanContents() async {
-    await Future.delayed(Duration(seconds: 10));
+    await Future.delayed(Duration(seconds: 3));
     setState(() {
       widget.scanContents =
           "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Vel facilisis volutpat est velit egestas. Bibendum enim facilisis gravida neque convallis a. Elit at imperdiet dui accumsan sit amet nulla facilisi. Mauris pellentesque pulvinar pellentesque habitant morbi tristique senectus. Ullamcorper sit amet risus nullam eget. Posuere morbi leo urna molestie at elementum eu. In fermentum et sollicitudin ac. Feugiat sed lectus vestibulum mattis ullamcorper. Nulla aliquet porttitor lacus luctus accumsan. Nulla aliquet porttitor lacus luctus. Ac tincidunt vitae semper quis lectus. A diam maecenas sed enim ut sem viverra aliquet eget. In vitae turpis massa sed elementum tempus egestas sed sed. Etiam dignissim diam quis enim lobortis scelerisque. Velit dignissim sodales ut eu. Sed vulputate odio ut enim blandit volutpat. Nec ullamcorper sit amet risus nullam eget felis eget. Dictumst quisque sagittis purus sit. Elit ut aliquam purus sit amet luctus venenatis lectus. Suscipit adipiscing bibendum est ultricies integer.";
@@ -23,7 +23,8 @@ class _DocumentScreenState extends State<DocumentScreen> {
     return;
     final imageData = base64Encode(await widget.image.readAsBytes());
     final resp = await http.post(
-      Uri.parse(''),
+      Uri.parse(
+          'https://vision.googleapis.com/v1/images:annotate?key=AIzaSyDHALPXcvTJE1CIZB8XJY-aFhrZSalffbk'),
       body: jsonEncode({
         "requests": [
           {
@@ -58,26 +59,18 @@ class _DocumentScreenState extends State<DocumentScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Scan Results",
-            style: TextStyle(fontWeight: FontWeight.bold)),
-        centerTitle: false,
-        /*
+          title: const Text("Scan Results",
+              style: TextStyle(fontWeight: FontWeight.bold)),
+          centerTitle: false,
           actions: [
-            IconButton(
-              icon: const Icon(Icons.edit),
+            TextButton(
               onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Title modified')));
+                ScaffoldMessenger.of(context)
+                    .showSnackBar(const SnackBar(content: Text('Scan saved')));
               },
-            ),
-            IconButton(
-              icon: const Icon(Icons.delete),
-              onPressed: () {
-                Navigator.pop(context);
-              },
-            ),
-          ]*/
-      ),
+              child: const Text("Save"),
+            )
+          ]),
       body: LayoutBuilder(
           builder: (context, constraints) => Container(
               height: constraints.maxHeight - 320,
