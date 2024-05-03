@@ -3,6 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 class ScanScreen extends StatefulWidget {
   final File image;
   String? scanContents;
@@ -38,6 +42,20 @@ class _ScanScreenState extends State<ScanScreen> {
             textData != null ? textData['text'] : "No text detected";
       });
     }
+  }
+
+  Future<void> _saveScan() async {
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    final storageRef = FirebaseStorage.instance.ref('images/$timestamp');
+    await storageRef.putFile(widget.image);
+    final url = storageRef.getDownloadURL();
+
+    String currentUserId = FirebaseAuth.instance.currentUser!.uid;
+    DocumentSnapshot userDoc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(currentUserId)
+        .get();
+    // Add { fileName: timestamp?, url: url, text: widget.scanContents! } to user
   }
 
   @override
@@ -86,15 +104,18 @@ class _ScanScreenState extends State<ScanScreen> {
                   : const Center(child: CircularProgressIndicator()))),
       bottomNavigationBar: BottomAppBar(
         color: Colors.black,
-        child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-          FilledButton.icon(
-              onPressed: () {
-                ScaffoldMessenger.of(context)
-                    .showSnackBar(const SnackBar(content: Text('Scan saved')));
-              },
-              icon: const Icon(Icons.save),
-              label: const Text('Save'))
-        ]),
+        child: widget.scanContents != null
+            ? Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+                FilledButton.icon(
+                    onPressed: () async {
+                      await _saveScan();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Scan saved')));
+                    },
+                    icon: const Icon(Icons.save),
+                    label: const Text('Save'))
+              ])
+            : null,
       ),
     );
   }
