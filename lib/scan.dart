@@ -3,17 +3,17 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-class DocumentScreen extends StatefulWidget {
+class ScanScreen extends StatefulWidget {
   final File image;
   String? scanContents;
 
-  DocumentScreen({super.key, required this.image, this.scanContents});
+  ScanScreen({super.key, required this.image, this.scanContents});
 
   @override
-  State<DocumentScreen> createState() => _DocumentScreenState();
+  State<ScanScreen> createState() => _ScanScreenState();
 }
 
-class _DocumentScreenState extends State<DocumentScreen> {
+class _ScanScreenState extends State<ScanScreen> {
   Future<void> _fetchScanContents() async {
     await Future.delayed(Duration(seconds: 3));
     setState(() {

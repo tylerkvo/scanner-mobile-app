@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
-import 'package:scanner/document.dart';
+import 'package:scanner/scan.dart';
 
 class CameraScreen extends StatefulWidget {
   const CameraScreen({super.key});
@@ -58,7 +58,7 @@ class _CameraScreenState extends State<CameraScreen> {
                             await Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (context) => DocumentScreen(
+                                    builder: (context) => ScanScreen(
                                         image: File(photo.path))));
                             controller!.resumePreview();
                           },
