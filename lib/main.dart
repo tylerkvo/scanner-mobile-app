@@ -31,6 +31,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/': (context) => LoginScreen(),
         '/mainApp': (context) => MainApp(cameras: cameras),
+        '/login': (context) => LoginScreen(),
       },
     );
   }
@@ -46,7 +47,7 @@ class MainApp extends StatefulWidget {
 }
 
 class _MainAppState extends State<MainApp> {
-  int _selectedIndex = 1; // Set this to 1 to open Camera screen first
+  int _selectedIndex = 1; // Open Camera screen first
 
   @override
   void initState() {
@@ -70,23 +71,28 @@ class _MainAppState extends State<MainApp> {
     return Scaffold(
       body: SizedBox.expand(child: widgetOptions.elementAt(_selectedIndex)),
       bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
+        items: <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            icon: Icon(Icons.folder),
+            icon: Icon(_selectedIndex == 0 ? Icons.folder : Icons.folder_outlined),
             label: 'Documents',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.camera_alt),
+            icon: Icon(_selectedIndex == 1 ? Icons.camera_alt : Icons.camera_alt_outlined),
             label: 'Camera',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.people),
+            icon: Icon(_selectedIndex == 2 ? Icons.people : Icons.people_outline),
             label: 'Friends',
           ),
         ],
         currentIndex: _selectedIndex,
-        selectedItemColor: Colors.amber[800],
+        backgroundColor: _selectedIndex == 1 ? Colors.black : Colors.white,
+        unselectedItemColor: _selectedIndex == 1 ? Colors.white : Colors.black,
+        selectedItemColor: _selectedIndex == 1 ? Colors.white : Colors.black,
         onTap: _onItemTapped,
+        showSelectedLabels: false,
+        showUnselectedLabels: false,
+        iconSize: 36,
       ),
     );
   }

@@ -12,12 +12,14 @@ class _FriendsScreenState extends State<FriendsScreen> with SingleTickerProvider
   late List<Map<String, dynamic>> _allUsers = [];
   List<String> _friendIds = [];
   bool _isLoading = true;
+  String _username = '';
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
     _fetchUsers();
+    _fetchCurrentUserName();
   }
 
     Future<void> _fetchUsers() async {
@@ -32,6 +34,8 @@ class _FriendsScreenState extends State<FriendsScreen> with SingleTickerProvider
       if (doc.id != currentUserId) {
         Map<String, dynamic> user = {
           'id': doc.id,
+          'firstName': doc['firstName'],
+          'lastName': doc['lastName'],
           'username': doc['username'],
           'isFriend': currentUserFriends.contains(doc.id),
         };
@@ -44,6 +48,25 @@ class _FriendsScreenState extends State<FriendsScreen> with SingleTickerProvider
       _friendIds = List<String>.from(currentUserFriends);
       _isLoading = false;
     });
+  }
+
+ Future<void> _fetchCurrentUserName() async {
+  String currentUserId = FirebaseAuth.instance.currentUser!.uid;
+  DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(currentUserId).get();
+  if (userDoc.exists) {
+    // Explicitly cast the data to a Map<String, dynamic>
+    Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
+    setState(() {
+      _username = userData['username'] ?? 'No username';  // Safely access 'username' with a null check
+    });
+  }
+}
+
+
+  Future<void> _logout() async {
+    await FirebaseAuth.instance.signOut();
+    // Optionally redirect the user to the login screen or another appropriate screen
+    Navigator.of(context).pushReplacementNamed('/login');  // Assuming '/login' is your login route
   }
 
   void _addFriend(String friendId) async {
@@ -67,7 +90,16 @@ class _FriendsScreenState extends State<FriendsScreen> with SingleTickerProvider
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Friends'),
+        title: Text(_username, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24)),
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.exit_to_app),
+            onPressed: () async {
+              await _logout();
+            },
+          ),
+        ],
+
         bottom: TabBar(
           controller: _tabController,
           tabs: [
@@ -83,15 +115,27 @@ class _FriendsScreenState extends State<FriendsScreen> with SingleTickerProvider
               children: [
                 ListView(
                   children: _allUsers.where((user) => user['isFriend']).map((user) {
+                    String initials = (user['firstName'][0] + user['lastName'][0]).toUpperCase();
                     return ListTile(
-                      title: Text(user['username']),
+                      leading: CircleAvatar(
+                        backgroundColor: Colors.blue,
+                        child: Text(initials),
+                       ),
+                      title: Text('${user['firstName']} ${user['lastName']}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                      subtitle: Text(user['username']),
                     );
                   }).toList(),
                 ),
                 ListView(
                   children: _allUsers.where((user) => !user['isFriend']).map((user) {
+                    String initials = (user['firstName'][0] + user['lastName'][0]).toUpperCase();
                     return ListTile(
-                      title: Text(user['username']),
+                      leading: CircleAvatar(
+                        backgroundColor: Colors.blue,
+                        child: Text(initials),
+                      ),
+                      title: Text('${user['firstName']} ${user['lastName']}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                      subtitle: Text(user['username']),
                       trailing: ElevatedButton(
                         onPressed: () => _addFriend(user['id']),
                         child: Text('Add'),

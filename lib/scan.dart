@@ -3,17 +3,17 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-class DocumentScreen extends StatefulWidget {
+class ScanScreen extends StatefulWidget {
   final File image;
   String? scanContents;
 
-  DocumentScreen({super.key, required this.image, this.scanContents});
+  ScanScreen({super.key, required this.image, this.scanContents});
 
   @override
-  State<DocumentScreen> createState() => _DocumentScreenState();
+  State<ScanScreen> createState() => _ScanScreenState();
 }
 
-class _DocumentScreenState extends State<DocumentScreen> {
+class _ScanScreenState extends State<ScanScreen> {
   Future<void> _fetchScanContents() async {
     final imageData = base64Encode(await widget.image.readAsBytes());
     final resp = await http.post(
@@ -55,15 +55,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
           title: const Text("Scan Results",
               style: TextStyle(fontWeight: FontWeight.bold)),
           centerTitle: false,
-          actions: [
-            TextButton(
-              onPressed: () {
-                ScaffoldMessenger.of(context)
-                    .showSnackBar(const SnackBar(content: Text('Scan saved')));
-              },
-              child: const Text("Save"),
-            )
-          ]),
+          ),
       body: LayoutBuilder(
           builder: (context, constraints) => Container(
               height: constraints.maxHeight - 320,
@@ -92,6 +84,46 @@ class _DocumentScreenState extends State<DocumentScreen> {
               child: widget.scanContents != null
                   ? Text(widget.scanContents!)
                   : const Center(child: CircularProgressIndicator()))),
+       bottomNavigationBar: SizedBox(height: 70, child: 
+      BottomAppBar(
+        color: Colors.black,  // This is the color of the BottomAppBar
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.end,  // Aligns the button to the right
+          children: <Widget>[
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              decoration: BoxDecoration(
+                color: Colors.blue,  // Background color of the button
+                borderRadius: BorderRadius.circular(30),  // Makes it oval
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black26,
+                    blurRadius: 4,
+                    offset: Offset(0, 2),
+                  )
+                ],
+              ),
+              child: InkWell(
+                onTap: () {
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Save Tapped')));
+                },
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,  // Minimizes the Row size to fit its children
+                  children: [
+                    Text("Save", style: TextStyle(color: Colors.white)),  // Save text
+                    SizedBox(width: 10),
+                    Icon(Icons.save, color: Colors.white),  // Save icon
+                    
+                    
+                  ],
+                ),
+              ),
+            ),
+        
+          ],
+        ),
+      ),
+      )
     );
   }
 }

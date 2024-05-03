@@ -12,6 +12,8 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _usernameController = TextEditingController();
+  final _firstNameController = TextEditingController(); // Controller for first name
+  final _lastNameController = TextEditingController(); // Controller for last name
   String _errorMessage = '';
   bool _isRegister = false;  // Toggle between register and login
 
@@ -24,6 +26,8 @@ class _LoginScreenState extends State<LoginScreen> {
     if (userCredential.user != null) {
       // Store user data in Firestore
       await FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid).set({
+        'firstName': _firstNameController.text.trim(), // Store first name
+          'lastName': _lastNameController.text.trim(), // Store last name
         'username': _usernameController.text.trim(),
         'email': _emailController.text.trim(),
         'friends': [], // Initialize empty array for friends
@@ -65,17 +69,32 @@ class _LoginScreenState extends State<LoginScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            if (_isRegister) TextField(
-              controller: _usernameController,
-              decoration: InputDecoration(
-                labelText: 'Username',
+            if (_isRegister) ...[
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _firstNameController,
+                      decoration: InputDecoration(labelText: 'First Name'),
+                    ),
+                  ),
+                  SizedBox(width: 10),  // spacing between the text fields
+                  Expanded(
+                    child: TextField(
+                      controller: _lastNameController,
+                      decoration: InputDecoration(labelText: 'Last Name'),
+                    ),
+                  ),
+                ],
               ),
-            ),
+              TextField(
+                controller: _usernameController,
+                decoration: InputDecoration(labelText: 'Username'),
+              ),
+            ],
             TextField(
               controller: _emailController,
-              decoration: InputDecoration(
-                labelText: 'Email',
-              ),
+              decoration: InputDecoration(labelText: 'Email'),
             ),
             TextField(
               controller: _passwordController,
