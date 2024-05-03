@@ -12,75 +12,76 @@ class CameraScreen extends StatefulWidget {
 }
 
 class _CameraScreenState extends State<CameraScreen> {
-  late CameraController controller;
-
-  Future<void> pause() async {
-    await Future.delayed(Duration(seconds: 10));
-    controller.pausePreview();
-    //final pic  = controller.takePicture();
-  }
+  CameraController? controller; // Make it nullable
 
   Future<void> _setupCamera() async {
     final cameras = await availableCameras();
-    controller = CameraController(cameras[0], ResolutionPreset.veryHigh);
-    controller.initialize().then((_) {
-      if (!mounted) {
-        return;
-      }
-      setState(() {});
-    }).catchError((Object e) {
-      if (e is CameraException) {
-        print(e);
-      }
-    });
+    if (cameras.isNotEmpty) {
+      var tempController = CameraController(cameras[0], ResolutionPreset.veryHigh);
+      await tempController.initialize().then((_) {
+        if (!mounted) return;
+        setState(() => controller = tempController);
+      }).catchError((Object e) {
+        if (e is CameraException) {
+          print('Camera initialization error: ${e.description}');
+        }
+      });
+    }
   }
 
   @override
   void initState() {
     super.initState();
     _setupCamera();
-    //pause();
   }
 
   @override
   void dispose() {
-    controller.dispose();
+    controller?.dispose(); // Dispose safely
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (!controller.value.isInitialized) {
-      return Container();
+    // Check if controller is initialized
+    if (controller == null || !controller!.value.isInitialized) {
+      return Center(
+        child: CircularProgressIndicator(), // Show loading indicator
+      );
     }
+
     return Container(
         color: Colors.black,
         child: Column(
-          //alignment: Alignment.bottomCenter,
           children: [
-            Expanded(child: CameraPreview(controller)),
-            //CameraPreview(controller),
+            Expanded(child: CameraPreview(controller!)), // Use the controller safely
             GestureDetector(
-                onTap: () async {
-                  final photo = await controller.takePicture();
-                  controller.pausePreview();
-                  await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) =>
-                              DocumentScreen(image: File(photo.path))));
-                  controller.resumePreview();
-                },
-                child: Container(
-                    width: 80,
-                    height: 80,
-                    margin: const EdgeInsets.symmetric(vertical: 20),
-                    decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                            color: const Color.fromRGBO(155, 155, 155, 0.3),
-                            width: 5))))
+              onTap: () async {
+                final photo = await controller!.takePicture();
+                controller!.pausePreview();
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => DocumentScreen(image: File(photo.path))
+                  )
+                );
+                controller!.resumePreview();
+              },
+              child: Container(
+                width: 80,
+                height: 80,
+                margin: const EdgeInsets.symmetric(vertical: 20),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: const Color.fromRGBO(155, 155, 155, 0.3),
+                    width: 5
+                  )
+                )
+              )
+            )
           ],
-        ));
+        )
+    );
   }
 }
