@@ -15,12 +15,6 @@ class DocumentScreen extends StatefulWidget {
 
 class _DocumentScreenState extends State<DocumentScreen> {
   Future<void> _fetchScanContents() async {
-    await Future.delayed(Duration(seconds: 3));
-    setState(() {
-      widget.scanContents =
-          "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Vel facilisis volutpat est velit egestas. Bibendum enim facilisis gravida neque convallis a. Elit at imperdiet dui accumsan sit amet nulla facilisi. Mauris pellentesque pulvinar pellentesque habitant morbi tristique senectus. Ullamcorper sit amet risus nullam eget. Posuere morbi leo urna molestie at elementum eu. In fermentum et sollicitudin ac. Feugiat sed lectus vestibulum mattis ullamcorper. Nulla aliquet porttitor lacus luctus accumsan. Nulla aliquet porttitor lacus luctus. Ac tincidunt vitae semper quis lectus. A diam maecenas sed enim ut sem viverra aliquet eget. In vitae turpis massa sed elementum tempus egestas sed sed. Etiam dignissim diam quis enim lobortis scelerisque. Velit dignissim sodales ut eu. Sed vulputate odio ut enim blandit volutpat. Nec ullamcorper sit amet risus nullam eget felis eget. Dictumst quisque sagittis purus sit. Elit ut aliquam purus sit amet luctus venenatis lectus. Suscipit adipiscing bibendum est ultricies integer.";
-    });
-    return;
     final imageData = base64Encode(await widget.image.readAsBytes());
     final resp = await http.post(
       Uri.parse(
@@ -36,7 +30,6 @@ class _DocumentScreenState extends State<DocumentScreen> {
         ]
       }),
     );
-    print(resp.body);
     if (resp.statusCode == 200) {
       final json = jsonDecode(resp.body);
       final textData = json['responses'][0]['fullTextAnnotation'];
