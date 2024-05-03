@@ -31,6 +31,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/': (context) => LoginScreen(),
         '/mainApp': (context) => MainApp(cameras: cameras),
+        '/login': (context) => LoginScreen(),
       },
     );
   }
@@ -72,21 +73,26 @@ class _MainAppState extends State<MainApp> {
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            icon: Icon(Icons.folder),
-            label: 'Documents',
+            icon: Icon(Icons.folder, color: Colors.white), // Set icon color to white
+            label: 'Documents', // Set label to empty string to remove it
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.camera_alt),
+            icon: Icon(Icons.camera_alt, color: Colors.white), // Set icon color to white
             label: 'Camera',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.people),
+            icon: Icon(Icons.people, color: Colors.white), // Set icon color to white
             label: 'Friends',
           ),
         ],
         currentIndex: _selectedIndex,
+        backgroundColor: Colors.black, // Set background color to black
+        unselectedItemColor: Colors.white, // Set unselected item color to white
         selectedItemColor: Colors.amber[800],
         onTap: _onItemTapped,
+        showSelectedLabels: false, // Hide selected labels
+        showUnselectedLabels: false, // Hide unselected labels
+        iconSize: 36,
       ),
     );
   }

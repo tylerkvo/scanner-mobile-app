@@ -12,15 +12,17 @@ class _FriendsScreenState extends State<FriendsScreen> with SingleTickerProvider
   late List<Map<String, dynamic>> _allUsers = [];
   List<String> _friendIds = [];
   bool _isLoading = true;
+  String _username = '';  // Initial username
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
     _fetchUsers();
+    _fetchCurrentUserName();
   }
 
-    Future<void> _fetchUsers() async {
+  Future<void> _fetchUsers() async {
     String currentUserId = FirebaseAuth.instance.currentUser!.uid;
     DocumentSnapshot currentUserDoc = await FirebaseFirestore.instance.collection('users').doc(currentUserId).get();
     List<dynamic> currentUserFriends = currentUserDoc['friends'];
@@ -32,8 +34,10 @@ class _FriendsScreenState extends State<FriendsScreen> with SingleTickerProvider
       if (doc.id != currentUserId) {
         Map<String, dynamic> user = {
           'id': doc.id,
+          'firstName': doc['firstName'],
+          'lastName': doc['lastName'],
           'username': doc['username'],
-          'isFriend': currentUserFriends.contains(doc.id),
+          'isFriend': doc['friends'].contains(currentUserId),
         };
         users.add(user);
       }
@@ -46,15 +50,31 @@ class _FriendsScreenState extends State<FriendsScreen> with SingleTickerProvider
     });
   }
 
+ Future<void> _fetchCurrentUserName() async {
+  String currentUserId = FirebaseAuth.instance.currentUser!.uid;
+  DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(currentUserId).get();
+  if (userDoc.exists) {
+    // Explicitly cast the data to a Map<String, dynamic>
+    Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
+    setState(() {
+      _username = userData['username'] ?? 'No username';  // Safely access 'username' with a null check
+    });
+  }
+}
+ Future<void> _logout() async {
+  await FirebaseAuth.instance.signOut();
+  // Optionally redirect the user to the login screen or another appropriate screen
+  Navigator.of(context).pushReplacementNamed('/login');  // Assuming '/login' is your login route
+  }
+
+
   void _addFriend(String friendId) async {
     String currentUserId = FirebaseAuth.instance.currentUser!.uid;
 
-    // Add friend
     await FirebaseFirestore.instance.collection('users').doc(currentUserId).update({
       'friends': FieldValue.arrayUnion([friendId])
     });
 
-    // Update local state
     int index = _allUsers.indexWhere((user) => user['id'] == friendId);
     if (index != -1) {
       setState(() {
@@ -67,40 +87,53 @@ class _FriendsScreenState extends State<FriendsScreen> with SingleTickerProvider
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Friends'),
+        title: Text(_username, style: TextStyle(fontWeight: FontWeight.bold)),
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.exit_to_app),
+            onPressed: () async {
+              await _logout();
+            },
+          ),
+        ],
         bottom: TabBar(
           controller: _tabController,
           tabs: [
-            Tab(text: 'Friends'),
-            Tab(text: 'Add Friends'),
+            Tab(text: 'Following'),
+            Tab(text: 'Suggested'),
           ],
         ),
       ),
+
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
           : TabBarView(
               controller: _tabController,
               children: [
                 ListView(
-                  children: _allUsers.where((user) => user['isFriend']).map((user) {
-                    return ListTile(
-                      title: Text(user['username']),
-                    );
-                  }).toList(),
+                  children: _allUsers.where((user) => user['isFriend']).map(_buildUserTile).toList(),
                 ),
                 ListView(
-                  children: _allUsers.where((user) => !user['isFriend']).map((user) {
-                    return ListTile(
-                      title: Text(user['username']),
-                      trailing: ElevatedButton(
-                        onPressed: () => _addFriend(user['id']),
-                        child: Text('Add'),
-                      ),
-                    );
-                  }).toList(),
+                  children: _allUsers.where((user) => !user['isFriend']).map(_buildUserTile).toList(),
                 ),
               ],
             ),
+    );
+  }
+
+  Widget _buildUserTile(Map<String, dynamic> user) {
+    String initials = (user['firstName'][0] + user['lastName'][0]).toUpperCase();
+    return ListTile(
+      leading: CircleAvatar(
+        backgroundColor: Colors.blue,
+        child: Text(initials),
+      ),
+      title: Text('${user['firstName']} ${user['lastName']}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+      subtitle: Text(user['username']),
+      trailing: user['isFriend'] ? null : ElevatedButton(
+        onPressed: () => _addFriend(user['id']),
+        child: Text('Add'),
+      ),
     );
   }
 
