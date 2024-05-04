@@ -1,5 +1,6 @@
 /*
 Used BottomNavigationBar docs: https://api.flutter.dev/flutter/material/BottomNavigationBar-class.html
+Used Flutter guide to learn how to use named routes: https://docs.flutter.dev/cookbook/navigation/named-routes
 */
 import 'package:flutter/material.dart';
 import 'camera.dart';
