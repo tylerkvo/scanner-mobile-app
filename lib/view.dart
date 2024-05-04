@@ -46,16 +46,29 @@ class _ViewScreenState extends State<ViewScreen> {
             actions: [
               IconButton(icon: const Icon(Icons.delete), onPressed: _deleteScan)
             ]),
-        body: SingleChildScrollView(
-          child: Column(children: [
-            Container(
-                padding: const EdgeInsets.all(8),
-                child: Image.network(widget.imageUrl, fit: BoxFit.contain)),
-            Container(
-                padding: const EdgeInsets.all(8),
-                child: Text(widget.scanContents,
-                    style: const TextStyle(fontSize: 16)))
-          ]),
-        ));
+        body: LayoutBuilder(
+            builder: (context, constraints) => Container(
+                height: constraints.maxHeight - 320,
+                margin: const EdgeInsets.all(14),
+                alignment: Alignment.center,
+                child: Container(
+                    decoration: const BoxDecoration(boxShadow: [
+                      BoxShadow(
+                          color: Color.fromRGBO(0, 0, 0, 0.5), blurRadius: 4)
+                    ]),
+                    child:
+                        Image.network(widget.imageUrl, fit: BoxFit.contain)))),
+        bottomSheet: Container(
+            height: 300,
+            width: double.infinity,
+            padding: const EdgeInsets.all(30),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular((24))),
+              boxShadow: [
+                BoxShadow(color: Color.fromRGBO(0, 0, 0, 0.15), blurRadius: 6)
+              ],
+            ),
+            child: SingleChildScrollView(child: Text(widget.scanContents))));
   }
 }
