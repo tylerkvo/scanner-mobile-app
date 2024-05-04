@@ -99,7 +99,9 @@ class _DocumentsGridState extends State<DocumentsGrid> {
                             scanContents: scan['text'],
                             documentId: scan['timestamp'].toString(),
                             isFriend: widget.isFriend)));
-                setState(() {});
+                setState(() {
+                  _fetchScans();
+                });
               },
               child: Padding(
                   padding: const EdgeInsets.all(4),
