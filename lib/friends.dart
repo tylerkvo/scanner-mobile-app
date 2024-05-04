@@ -4,6 +4,7 @@ Used TabBar documentation: https://api.flutter.dev/flutter/material/TabBar-class
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:scanner/documents.dart';
 
 class FriendsScreen extends StatefulWidget {
   @override
@@ -136,6 +137,15 @@ class _FriendsScreenState extends State<FriendsScreen> {
                               style: const TextStyle(
                                   fontWeight: FontWeight.bold, fontSize: 18)),
                           subtitle: Text(user['username']),
+                          onTap: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => FriendDocumentsScreen(
+                                      uid: user['id'],
+                                      firstName: user['firstName']),
+                                ));
+                          },
                         );
                       }).toList(),
                     ),

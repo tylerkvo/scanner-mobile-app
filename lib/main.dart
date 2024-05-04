@@ -46,7 +46,7 @@ class MainApp extends StatefulWidget {
 class _MainAppState extends State<MainApp> {
   int _selectedIndex = 1;
 
-  final screens = [DocumentsScreen(), CameraScreen(), FriendsScreen()];
+  final screens = [MyDocumentsScreen(), CameraScreen(), FriendsScreen()];
 
   @override
   Widget build(BuildContext context) {

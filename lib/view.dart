@@ -6,12 +6,14 @@ class ViewScreen extends StatefulWidget {
   final String imageUrl;
   final String scanContents;
   final String documentId;
+  final bool isFriend;
 
   ViewScreen(
       {super.key,
       required this.imageUrl,
       required this.scanContents,
-      required this.documentId});
+      required this.documentId,
+      this.isFriend = false});
 
   @override
   State<ViewScreen> createState() => _ViewScreenState();
@@ -43,9 +45,12 @@ class _ViewScreenState extends State<ViewScreen> {
             title: const Text("View Scan",
                 style: TextStyle(fontWeight: FontWeight.bold)),
             centerTitle: false,
-            actions: [
-              IconButton(icon: const Icon(Icons.delete), onPressed: _deleteScan)
-            ]),
+            actions: !widget.isFriend
+                ? [
+                    IconButton(
+                        icon: const Icon(Icons.delete), onPressed: _deleteScan)
+                  ]
+                : null),
         body: LayoutBuilder(
             builder: (context, constraints) => Container(
                 height: constraints.maxHeight - 320,

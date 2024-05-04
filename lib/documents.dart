@@ -6,8 +6,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:scanner/view.dart';
 
-class DocumentsScreen extends StatelessWidget {
-  DocumentsScreen({super.key});
+class MyDocumentsScreen extends StatelessWidget {
+  MyDocumentsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -16,12 +16,35 @@ class DocumentsScreen extends StatelessWidget {
         title: const Text('My Scans',
             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24)),
       ),
-      body: DocumentsGrid(),
+      body: DocumentsGrid(uid: FirebaseAuth.instance.currentUser!.uid),
+    );
+  }
+}
+
+class FriendDocumentsScreen extends StatelessWidget {
+  String uid;
+  String firstName;
+
+  FriendDocumentsScreen({required this.uid, required this.firstName});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('$firstName\'s Scans',
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 24)),
+      ),
+      body: DocumentsGrid(uid: uid, isFriend: true),
     );
   }
 }
 
 class DocumentsGrid extends StatefulWidget {
+  String uid;
+  bool isFriend;
+
+  DocumentsGrid({required this.uid, this.isFriend = false});
+
   @override
   State<DocumentsGrid> createState() => _DocumentsGridState();
 }
@@ -30,9 +53,10 @@ class _DocumentsGridState extends State<DocumentsGrid> {
   List<Map<String, dynamic>>? scans;
 
   Future<void> _fetchScans() async {
-    String userId = FirebaseAuth.instance.currentUser!.uid;
-    DocumentSnapshot userData =
-        await FirebaseFirestore.instance.collection('users').doc(userId).get();
+    DocumentSnapshot userData = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(widget.uid)
+        .get();
     setState(() {
       scans = List<Map<String, dynamic>>.from(userData['scans'] ?? []);
     });
@@ -71,10 +95,10 @@ class _DocumentsGridState extends State<DocumentsGrid> {
                     context,
                     MaterialPageRoute(
                         builder: (context) => ViewScreen(
-                              imageUrl: scan['url'],
-                              scanContents: scan['text'],
-                              documentId: scan['timestamp'].toString(),
-                            )));
+                            imageUrl: scan['url'],
+                            scanContents: scan['text'],
+                            documentId: scan['timestamp'].toString(),
+                            isFriend: widget.isFriend)));
                 setState(() {});
               },
               child: Padding(
